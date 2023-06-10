@@ -102,9 +102,12 @@ float calculateSpeed()
 {
     uint32_t position = EQEP_getPosition(EQEP1_BASE);
     float deltaTime = 0.001f;  // Time interval between speed calculations (in seconds)
-
+    int32_t y=position-prev_pos;
     // Calculate speed in encoder counts per second
-    float speedCountsPerSec = (float)(position - prev_pos) / deltaTime;
+    if(y<0)
+        y*=-1;
+
+    float speedCountsPerSec = (float)(y) / deltaTime;
     prev_pos=position;
     // Calculate speed in RPM
     float speedRPM = (speedCountsPerSec /( ENCODER_RESOLUTION*4)) * 60.0f;
@@ -310,10 +313,29 @@ void PinMux_init()
             uint16_t m=(int16_t)j;
            char l[16]={};
 
-              SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("SPEED="), sizeof("SPEED="));
-                intToStrPositive(m, l);
-                SCI_writeCharArray(mySCI0_BASE, (uint16_t *)l, sizeof(l));
+            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("SPEED="), sizeof("SPEED="));
+            intToStrPositive(m, l);
+            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)l, sizeof(l));
+            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("\r\n"), sizeof("\r\n"));
+//            uint32_t qq=EQEP_getPosition(EQEP1_BASE);
+//            uint16_t qqq=(uint16_t)qq;
+//            char tt[16]={};
+//            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("Position="), sizeof("Position="));
+//            intToStrPositive(qqq, tt);
+//            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)tt, sizeof(tt));
+//            SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("\r\n"), sizeof("\r\n"));
+            if(EQEP_getDirection(EQEP1_BASE)>0)
+            {
+                SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("Positive"), sizeof("Positive"));
                 SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("\r\n"), sizeof("\r\n"));
+            }
+            else
+            {
+                SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("Negative"), sizeof("Negative"));
+                SCI_writeCharArray(mySCI0_BASE, (uint16_t *)("\r\n"), sizeof("\r\n"));
+            }
+
+
 
      //
      // Acknowledge this interrupt to receive more interrupts from group 1
